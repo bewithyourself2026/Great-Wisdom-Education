@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String        @id @default(cuid())
+  name             String
+  email            String        @unique
+  role             String        @default("STUDENT")
+  createdAt        DateTime      @default(now())
+  instructorCamps  Camp[]        @relation("InstructorCamps")
+  enrollments      Enrollment[]
+}
+
+model Camp {
+  id           String        @id @default(cuid())
+  title        String        @unique
+  description  String
+  location     String
+  startDate    DateTime
+  endDate      DateTime
+  capacity     Int
+  price        Int?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  instructorId String?
+  instructor   User?         @relation("InstructorCamps", fields: [instructorId], references: [id])
+  enrollments  Enrollment[]
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  campId    String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  camp Camp @relation(fields: [campId], references: [id])
+
+  @@unique([userId, campId])
+}
